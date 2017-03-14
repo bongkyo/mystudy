@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	xsi:schemaLocation="http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring-1.2.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd">
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<!-- spring-jdbc 모듈이용 -->
+		<!-- SimpleDriverDataSource클래스로 dataSource객체 생성 -->
+		<property name="driverClassName" value="net.sf.log4jdbc.sql.jdbcapi.DriverSpy" />
+		<property name="url" value="jdbc:log4jdbc:oracle:thin:@127.0.0.1:1521:xe" />
+		<property name="username" value="scott" />
+		<property name="password" value="tiger" />
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- MyBatis-Spring 모듈이용 -->
+		<!-- SqlSessionFactoryBean 이용 -->
+		<!-- sqlSessionFactory 객체 생성 -->
+		<property name="configLocation" value="classpath:/mybatis-config.xml"></property>
+		<!-- mybatis-config.xml 파일이 스프링이 동작할때 같이 동작할 수 있게끔해줌 -->
+		<property name="mapperLocations" value="classpath:mappers/**/*Mapper.xml"></property>
+		<!-- 작성된 mappers폴더 내에 어떤 폴더이건 관계없이 파일의 이름이 Mapper.xml로 끝나면 자동으로 인식하게함 -->
+	</bean>
+
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate"
+		destroy-method="clearCache">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"></constructor-arg>
+		<!-- SqlSessionTemplate은 SqlSessionFactory를 생성자로 주입하여 설정함 -->
+	</bean>
+	<!-- mybatis-spring에서 제공하는 SqlSessionTemplate은 MyBatis의 SqlSession인터페이스를 
+		구현한 클래스로 기본적인 트랜잭션의 관리나 쓰레드 처리의 안정성등을 보장해주고,데이터베이스의 연결과 종료를 책임짐 -->
+
+	<context:component-scan base-package="org.zerock.persistence"></context:component-scan>
+	<!-- @Repository 애노테이션이 설정되더라도 스프링에서 해당 패키지를 스캔하지 않으면 제대로 스프링의 빈으로 되지않음 -->
+	<context:component-scan base-package="org.zerock.service"></context:component-scan>
+	<!-- 패키지를 자동으로 인식하게 해줌 -->
+</beans>
+
